@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}{{ photo['caption'] or 'Photo' }} - Photo Book{% endblock %}
+
+{% block content %}
+<div class="photo-detail">
+    {% if photo['video_filename'] %}
+    <div data-live-photo
+         data-photo-src="{{ url_for('serve_photo', filename=photo['filename']) }}"
+         data-video-src="{{ url_for('serve_video', filename=photo['video_filename']) }}"
+         style="width: 100%; height: 600px;">
+    </div>
+    {% else %}
+    <img src="{{ url_for('serve_photo', filename=photo['filename']) }}" alt="{{ photo['caption'] or '' }}">
+    {% endif %}
+
+    <div class="photo-info">
+        {% if photo['caption'] %}
+        <h2>{{ photo['caption'] }}</h2>
+        {% endif %}
+
+        <p class="photo-date">
+            {% if photo['taken_at'] %}
+                {{ photo['taken_at'] }}
+            {% else %}
+                Uploaded {{ photo['uploaded_at'] }}
+            {% endif %}
+        </p>
+
+        <form method="POST" action="{{ url_for('update_photo_album', photo_id=photo['id']) }}" class="album-select-form">
+            <label>Album:</label>
+            <select name="album_id" onchange="this.form.submit()">
+                <option value="">None</option>
+                {% for a in albums %}
+                <option value="{{ a['id'] }}" {% if photo['album_id'] == a['id'] %}selected{% endif %}>{{ a['name'] }}</option>
+                {% endfor %}
+            </select>
+        </form>
+
+        <form method="POST" action="{{ url_for('delete_photo', photo_id=photo['id']) }}"
+              onsubmit="return confirm('Delete this photo?')">
+            <button type="submit" class="btn-danger">Delete photo</button>
+        </form>
+    </div>
+</div>
+
+<a href="{{ url_for('feed') }}" class="back-link">&larr; Back to feed</a>
+{% endblock %}

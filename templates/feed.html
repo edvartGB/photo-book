@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Feed - Photo Book{% endblock %}
+
+{% block content %}
+<h1>Feed</h1>
+
+{% if photos %}
+<div class="feed-list">
+    {% for photo in photos %}
+    <div class="feed-item">
+        {% if photo['video_filename'] %}
+        <div data-live-photo
+             data-photo-src="{{ url_for('serve_photo', filename=photo['filename']) }}"
+             data-video-src="{{ url_for('serve_video', filename=photo['video_filename']) }}"
+             style="width: 100%; height: 500px;">
+        </div>
+        {% else %}
+        <a href="{{ url_for('photo', photo_id=photo['id']) }}">
+            <img src="{{ url_for('serve_photo', filename=photo['filename']) }}" alt="{{ photo['caption'] or photo['original_name'] }}" loading="lazy">
+        </a>
+        {% endif %}
+        <div class="feed-item-info">
+            <span>
+                {% if photo['caption'] %}
+                <span class="feed-item-caption">{{ photo['caption'] }}</span> &middot;
+                {% endif %}
+                <a href="{{ url_for('photo', photo_id=photo['id']) }}">view</a>
+            </span>
+            <span>{{ photo['taken_at'] or photo['uploaded_at'] }}</span>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="pagination">
+    {% if page > 1 %}
+    <a href="{{ url_for('feed', page=page-1) }}">&larr; Newer</a>
+    {% endif %}
+    {% if has_next %}
+    <a href="{{ url_for('feed', page=page+1) }}">Older &rarr;</a>
+    {% endif %}
+</div>
+{% else %}
+<p class="empty">No photos yet. <a href="{{ url_for('upload_page') }}">Upload some!</a></p>
+{% endif %}
+{% endblock %}

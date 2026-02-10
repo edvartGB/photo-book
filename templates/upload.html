@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Upload - Photo Book{% endblock %}
+
+{% block content %}
+<h1>Upload Photos</h1>
+
+<form method="POST" enctype="multipart/form-data" action="{{ url_for('upload') }}" class="upload-form" id="upload-form">
+    <div class="drop-zone" id="drop-zone">
+        <p>Drag & drop photos here</p>
+        <p class="drop-zone-hint">select multiple folders or files — they accumulate</p>
+        <input type="file" name="photos" id="file-input" multiple accept="image/*,video/quicktime,.mov" hidden>
+        <input type="file" id="folder-input" webkitdirectory hidden>
+    </div>
+    <div class="upload-buttons">
+        <button type="button" id="browse-files-btn">Select files</button>
+        <button type="button" id="browse-folder-btn">Select folder</button>
+    </div>
+
+    <div id="preview" class="upload-preview"></div>
+
+    <div class="upload-fields">
+        <input type="text" name="caption" placeholder="Caption (optional)">
+        <select name="album_id">
+            <option value="">No album</option>
+            {% for album in albums %}
+            <option value="{{ album['id'] }}">{{ album['name'] }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" id="upload-btn" disabled>Upload</button>
+    </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='upload.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Photo Book{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.apple-livephotoskit.com/lpk/1/livephotoskit.js"></script>
+</head>
+<body>
+    {% if session.get('logged_in') %}
+    <nav>
+        <a href="{{ url_for('feed') }}" class="nav-brand">Photo Book</a>
+        <div class="nav-links">
+            <a href="{{ url_for('feed') }}" {% if request.endpoint == 'feed' %}class="active"{% endif %}>Feed</a>
+            <a href="{{ url_for('library') }}" {% if request.endpoint == 'library' %}class="active"{% endif %}>Library</a>
+            <a href="{{ url_for('albums') }}" {% if request.endpoint in ('albums', 'album') %}class="active"{% endif %}>Albums</a>
+            <a href="{{ url_for('upload_page') }}" {% if request.endpoint == 'upload_page' %}class="active"{% endif %}>Upload</a>
+            <a href="{{ url_for('logout') }}">Log out</a>
+        </div>
+    </nav>
+    {% endif %}
+
+    <main>
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <div class="flashes">
+            {% for msg in messages %}
+            <p class="flash">{{ msg }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

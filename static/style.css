@@ -1,0 +1,481 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Verdana, Geneva, sans-serif;
+    background: #f5f5f5;
+    color: #333;
+    font-size: 13px;
+    min-height: 100vh;
+}
+
+a {
+    color: #06c;
+}
+
+a:hover {
+    color: #039;
+}
+
+/* --- Nav --- */
+
+nav {
+    background: #fff;
+    border-bottom: 1px solid #ccc;
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.nav-brand {
+    font-weight: bold;
+    font-size: 14px;
+    text-decoration: none;
+    color: #333;
+}
+
+.nav-links {
+    display: flex;
+    gap: 12px;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: #666;
+    font-size: 12px;
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+    color: #333;
+    text-decoration: underline;
+}
+
+/* --- Main --- */
+
+main {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 16px;
+}
+
+h1 {
+    font-size: 16px;
+    margin-bottom: 12px;
+}
+
+/* --- Flash messages --- */
+
+.flashes {
+    margin-bottom: 12px;
+}
+
+.flash {
+    padding: 6px 10px;
+    background: #ffc;
+    border: 1px solid #cc0;
+    font-size: 12px;
+}
+
+/* --- Login --- */
+
+.login-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+}
+
+.login-page h1 {
+    font-size: 18px;
+    margin-bottom: 16px;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 260px;
+}
+
+.login-form input {
+    padding: 5px;
+    border: 1px solid #999;
+    font-family: inherit;
+    font-size: 13px;
+}
+
+/* --- Buttons --- */
+
+button, .btn {
+    padding: 5px 12px;
+    background: #eee;
+    color: #333;
+    border: 1px solid #999;
+    font-family: inherit;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #ddd;
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-danger {
+    color: #900;
+    border-color: #c99;
+}
+
+.btn-danger:hover {
+    background: #fee;
+}
+
+/* --- Feed (single column) --- */
+
+.feed-list {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.feed-item {
+    background: #fff;
+    border: 1px solid #ccc;
+    padding: 12px;
+}
+
+.feed-item img {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.feed-item-info {
+    margin-top: 8px;
+    font-size: 12px;
+    color: #666;
+    display: flex;
+    justify-content: space-between;
+}
+
+.feed-item-caption {
+    color: #333;
+}
+
+/* --- Photo grid (albums) --- */
+
+.photo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 8px;
+}
+
+.photo-card {
+    display: block;
+    position: relative;
+    aspect-ratio: 1;
+    overflow: hidden;
+    border: 1px solid #ccc;
+    background: #eee;
+}
+
+.photo-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.photo-caption {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 4px 6px;
+    background: rgba(0,0,0,0.5);
+    color: #fff;
+    font-size: 11px;
+}
+
+/* --- Albums --- */
+
+.album-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+}
+
+.album-card {
+    display: block;
+    text-decoration: none;
+    color: #333;
+    background: #fff;
+    border: 1px solid #ccc;
+}
+
+.album-card:hover {
+    border-color: #999;
+}
+
+.album-card img {
+    width: 100%;
+    aspect-ratio: 16/10;
+    object-fit: cover;
+}
+
+.album-placeholder {
+    width: 100%;
+    aspect-ratio: 16/10;
+    background: #ddd;
+}
+
+.album-info {
+    padding: 6px 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+}
+
+.album-name {
+    font-weight: bold;
+}
+
+.album-count {
+    color: #999;
+}
+
+.create-album-form {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 16px;
+}
+
+.create-album-form input {
+    flex: 1;
+    padding: 5px;
+    border: 1px solid #999;
+    font-family: inherit;
+    font-size: 13px;
+}
+
+/* --- Upload --- */
+
+.drop-zone {
+    border: 2px dashed #bbb;
+    padding: 32px;
+    text-align: center;
+    background: #fff;
+}
+
+.upload-buttons {
+    display: flex;
+    gap: 4px;
+    margin: 8px 0 10px;
+}
+
+.drop-zone:hover,
+.drop-zone.dragover {
+    border-color: #666;
+    background: #fafafa;
+}
+
+.drop-zone p {
+    color: #888;
+    font-size: 13px;
+}
+
+.drop-zone-hint {
+    font-size: 11px;
+    margin-top: 4px;
+}
+
+.upload-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 10px;
+}
+
+.upload-preview img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border: 1px solid #ccc;
+}
+
+.upload-fields {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.upload-fields input,
+.upload-fields select {
+    padding: 5px;
+    border: 1px solid #999;
+    font-family: inherit;
+    font-size: 13px;
+}
+
+.upload-fields input {
+    flex: 1;
+    min-width: 180px;
+}
+
+/* --- Photo detail --- */
+
+.photo-detail {
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.photo-detail img {
+    width: 100%;
+    border: 1px solid #ccc;
+    margin-bottom: 10px;
+}
+
+.photo-info h2 {
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+.photo-date, .photo-album {
+    color: #888;
+    font-size: 12px;
+    margin-bottom: 2px;
+}
+
+.photo-info form {
+    margin-top: 10px;
+}
+
+.album-select-form {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #888;
+}
+
+.album-select-form select {
+    padding: 3px;
+    border: 1px solid #999;
+    font-family: inherit;
+    font-size: 12px;
+}
+
+.back-link {
+    display: inline-block;
+    margin-top: 12px;
+    font-size: 12px;
+}
+
+/* --- Page header --- */
+
+.page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.page-header h1 {
+    margin-bottom: 0;
+}
+
+.inline-form {
+    display: inline;
+}
+
+.page-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+}
+
+/* --- Photo picker --- */
+
+.picker-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    font-size: 12px;
+    color: #666;
+}
+
+.picker-toolbar label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+}
+
+.picker-card {
+    cursor: pointer;
+    border: 2px solid #ccc;
+}
+
+.picker-card.selected {
+    border-color: #06c;
+    opacity: 0.85;
+}
+
+.picker-submit {
+    margin-top: 12px;
+}
+
+#select-count {
+    font-weight: bold;
+}
+
+/* --- Pagination --- */
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-top: 16px;
+    padding: 8px 0;
+    font-size: 12px;
+}
+
+/* --- Misc --- */
+
+.empty {
+    color: #999;
+    padding: 32px 0;
+    text-align: center;
+}
+
+/* --- Mobile --- */
+
+@media (max-width: 600px) {
+    main {
+        padding: 10px;
+    }
+
+    .photo-grid {
+        grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    }
+
+    .upload-fields {
+        flex-direction: column;
+    }
+
+    .create-album-form {
+        flex-direction: column;
+    }
+}

@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Add photos to {{ album['name'] }} - Photo Book{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Add photos to "{{ album['name'] }}"</h1>
+    <a href="{{ url_for('album', album_id=album['id']) }}">&larr; Back to album</a>
+</div>
+
+<div class="picker-toolbar">
+    <label>
+        <input type="checkbox" id="filter-unassigned" {% if unassigned %}checked{% endif %}>
+        Only show unassigned photos
+    </label>
+    <span id="select-count">0 selected</span>
+</div>
+
+<form method="POST" id="add-form">
+    {% if photos %}
+    <div class="photo-grid picker-grid">
+        {% for photo in photos %}
+        <div class="photo-card picker-card" data-id="{{ photo['id'] }}">
+            <img src="{{ url_for('serve_thumbnail', filename=photo['filename']) }}" alt="{{ photo['caption'] or photo['original_name'] }}" loading="lazy">
+            <input type="checkbox" name="photo_ids" value="{{ photo['id'] }}" class="picker-check" hidden>
+            {% if photo['album_name'] %}
+            <span class="photo-caption">{{ photo['album_name'][:20] }}</span>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="picker-submit">
+        <button type="submit" id="add-btn" disabled>Add selected photos</button>
+    </div>
+    {% else %}
+    <p class="empty">No photos to show.</p>
+    {% endif %}
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const cards = document.querySelectorAll(".picker-card");
+const countEl = document.getElementById("select-count");
+const addBtn = document.getElementById("add-btn");
+const filterCb = document.getElementById("filter-unassigned");
+
+cards.forEach(card => {
+    card.addEventListener("click", () => {
+        const cb = card.querySelector(".picker-check");
+        cb.checked = !cb.checked;
+        card.classList.toggle("selected", cb.checked);
+        updateCount();
+    });
+});
+
+function updateCount() {
+    const n = document.querySelectorAll(".picker-check:checked").length;
+    countEl.textContent = n + " selected";
+    addBtn.disabled = n === 0;
+}
+
+filterCb.addEventListener("change", () => {
+    const url = new URL(window.location);
+    url.searchParams.set("unassigned", filterCb.checked ? "1" : "0");
+    window.location = url;
+});
+</script>
+{% endblock %}

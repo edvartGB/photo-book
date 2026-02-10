@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Albums - Photo Book{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Albums</h1>
+</div>
+
+<form method="POST" class="create-album-form">
+    <input type="text" name="name" placeholder="New album name..." required>
+    <button type="submit">Create</button>
+</form>
+
+{% if albums %}
+<div class="album-grid">
+    {% for album in albums %}
+    <a href="{{ url_for('album', album_id=album['id']) }}" class="album-card">
+        {% if album['cover_filename'] %}
+        <img src="{{ url_for('serve_thumbnail', filename=album['cover_filename']) }}" alt="{{ album['name'] }}">
+        {% else %}
+        <div class="album-placeholder"></div>
+        {% endif %}
+        <div class="album-info">
+            <span class="album-name">{{ album['name'] }}</span>
+            <span class="album-count">{{ album['photo_count'] }} photo{{ 's' if album['photo_count'] != 1 }}</span>
+        </div>
+    </a>
+    {% endfor %}
+</div>
+{% else %}
+<p class="empty">No albums yet. Create one above.</p>
+{% endif %}
+{% endblock %}

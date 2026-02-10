@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Library - Photo Book{% endblock %}
+
+{% block content %}
+<h1>Library</h1>
+
+{% if photos %}
+<div class="photo-grid">
+    {% for photo in photos %}
+    <a href="{{ url_for('photo', photo_id=photo['id']) }}" class="photo-card">
+        <img src="{{ url_for('serve_thumbnail', filename=photo['filename']) }}" alt="{{ photo['caption'] or photo['original_name'] }}" loading="lazy">
+        {% if photo['caption'] %}
+        <span class="photo-caption">{{ photo['caption'][:30] }}{% if photo['caption']|length > 30 %}...{% endif %}</span>
+        {% endif %}
+    </a>
+    {% endfor %}
+</div>
+
+<div class="pagination">
+    {% if page > 1 %}
+    <a href="{{ url_for('library', page=page-1) }}">&larr; Newer</a>
+    {% endif %}
+    {% if has_next %}
+    <a href="{{ url_for('library', page=page+1) }}">Older &rarr;</a>
+    {% endif %}
+</div>
+{% else %}
+<p class="empty">No photos yet. <a href="{{ url_for('upload_page') }}">Upload some!</a></p>
+{% endif %}
+{% endblock %}
