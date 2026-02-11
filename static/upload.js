@@ -51,9 +51,12 @@ function addFiles(fileList) {
             collectedFiles.items.add(file);
         }
     }
-    fileInput.files = collectedFiles.files;
     showPreviews();
 }
+
+document.getElementById("upload-form").addEventListener("submit", () => {
+    fileInput.files = collectedFiles.files;
+});
 
 function showPreviews() {
     preview.innerHTML = "";
