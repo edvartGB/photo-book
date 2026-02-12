@@ -1,98 +1,88 @@
 # Migration Guide: Mac → WSL (Windows)
 
 ## Overview
-This guide helps you migrate the Taro Popsicle photo management app from macOS to WSL on Windows. Your data directory is ~804MB.
+Migrate the Taro Popsicle photo app from macOS to WSL on Windows. Both computers are on the same network. Data directory is ~804MB.
 
-## Step 1: Install Prerequisites on WSL
+## Quick Command Reference
 
+**Get this file on new computer:**
+```bash
+git clone <repo-url> taro-popsicle
+cd taro-popsicle
+cat MIGRATION.md  # Read this guide
+```
+
+---
+
+## PART 1: On WSL (New Computer)
+
+### Step 1: Install Prerequisites
 ```bash
 # Update system packages
 sudo apt update && sudo apt upgrade -y
 
-# Install Python 3 and pip
-sudo apt install python3 python3-pip python3-venv -y
+# Install Python, build tools, and HEIF support (for Mac HEIC photos)
+sudo apt install -y \
+    python3 python3-pip python3-venv \
+    libheif-dev libheif1 \
+    libjpeg-dev zlib1g-dev \
+    git openssh-server rsync
 
-# Install HEIF/HEIC support libraries (critical for Mac photos)
-sudo apt install libheif-dev libheif1 -y
+# Start SSH service (needed for receiving files)
+sudo service ssh start
 
-# Install image processing libraries for Pillow
-sudo apt install libjpeg-dev zlib1g-dev -y
-
-# Install git if not already installed
-sudo apt install git -y
+# Get your WSL IP address - WRITE THIS DOWN
+hostname -I
+# Example output: 192.168.1.100
 ```
 
-## Step 2: Transfer Files to WSL
-
-### Option A: Using Git (Recommended for code only)
+### Step 2: Clone the Repository
 ```bash
-# On WSL, clone the repository
 cd ~
 git clone <your-repo-url> taro-popsicle
 cd taro-popsicle
 ```
 
-**Important:** Git ignores the `data/` directory, so you'll need to transfer it separately (see Step 3).
+---
 
-### Option B: Using rsync over network
+## PART 2: On Mac (Old Computer)
+
+### Step 3: Transfer Data Directory Over Network
+
+**Using rsync (recommended - shows progress, can resume):**
+
 ```bash
-# On Mac, install rsync if needed (usually pre-installed)
-# Get your WSL IP address first. On WSL run:
-hostname -I
-
-# On Mac, sync the entire project (replace WSL_USER and WSL_IP)
-rsync -avz --progress /Users/edvart/Programming/taro-popsicle/ WSL_USER@WSL_IP:~/taro-popsicle/
-```
-
-### Option C: Using Windows filesystem bridge
-```bash
-# On WSL, you can access Windows drives at /mnt/c/, /mnt/d/, etc.
-# First, copy the project to a Windows location (e.g., C:\Users\YourName\taro-popsicle)
-# Then from WSL:
-cp -r /mnt/c/Users/YourName/taro-popsicle ~/taro-popsicle
-```
-
-## Step 3: Transfer Data Directory (~804MB)
-
-The `data/` directory contains:
-- `data/photos/` - Original uploaded photos
-- `data/thumbnails/` - Generated thumbnails
-- `data/display/` - Web-optimized display versions
-- `data/web/` - Additional web assets (seems like display copies)
-- `data/videos/` - Live Photo videos
-- `data/photobook.db` - SQLite database with all metadata
-
-### Transfer methods (choose one):
-
-**Option 1: Copy via Windows filesystem** (Easiest)
-```bash
-# After copying project to Windows, from WSL:
-cd ~/taro-popsicle
-cp -r /mnt/c/Users/YourName/taro-popsicle-backup/data ./
-```
-
-**Option 2: Use scp over network**
-```bash
-# On Mac, create a tarball
 cd /Users/edvart/Programming/taro-popsicle
+
+# Replace WSL_USER with your WSL username (e.g., edvart)
+# Replace WSL_IP with the IP from Step 1 (e.g., 192.168.1.100)
+rsync -avz --progress data/ WSL_USER@WSL_IP:~/taro-popsicle/data/
+```
+
+**Alternative - Using scp:**
+
+```bash
+cd /Users/edvart/Programming/taro-popsicle
+
+# Create compressed archive
 tar -czf data.tar.gz data/
 
-# Transfer to WSL (get WSL IP with `hostname -I` on WSL)
+# Transfer to WSL (replace WSL_USER and WSL_IP)
 scp data.tar.gz WSL_USER@WSL_IP:~/taro-popsicle/
+```
 
-# On WSL, extract
+If using scp, extract on WSL:
+```bash
 cd ~/taro-popsicle
 tar -xzf data.tar.gz
 rm data.tar.gz
 ```
 
-**Option 3: Use cloud storage** (Google Drive, Dropbox, etc.)
-```bash
-# Upload data/ folder from Mac to cloud
-# Download on Windows, then copy to WSL
-```
+---
 
-## Step 4: Set Up Python Environment
+## PART 3: On WSL (New Computer)
+
+### Step 4: Set Up Python Environment
 
 ```bash
 cd ~/taro-popsicle
@@ -110,14 +100,15 @@ pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-## Step 5: Configure Environment Variables
+### Step 5: Create .env File
 
 ```bash
-# Create .env file
+# Copy example and edit
+cp .env.example .env
 nano .env
 ```
 
-Add your configuration (update values as needed):
+Update with your configuration:
 ```
 SECRET_KEY=oaksjgbaopejgaosj
 USERNAME=edvart
@@ -127,9 +118,9 @@ PASSWORD2=hilbert
 PORT=8081
 ```
 
-Save and exit (Ctrl+O, Enter, Ctrl+X in nano).
+Save and exit: `Ctrl+O`, `Enter`, `Ctrl+X`
 
-## Step 6: Verify Data Directories
+### Step 6: Verify Data Transfer
 
 ```bash
 # Check that all directories exist and have content
@@ -141,9 +132,13 @@ ls -lh data/photobook.db
 
 # Check photo count
 ls data/photos/ | wc -l
+
+# Fix permissions if needed
+chmod -R 755 data/
+chmod 644 data/photobook.db
 ```
 
-## Step 7: Test the Application
+### Step 7: Run the Application
 
 ```bash
 # Activate virtual environment if not already active
@@ -153,25 +148,31 @@ source venv/bin/activate
 python app.py
 ```
 
-The app should start on `http://localhost:8081` (or your configured PORT).
+The app should start on `http://localhost:8081`
 
-## Step 8: Production Deployment (Optional)
+**Access from Windows browser:**
+- Get WSL IP: `hostname -I`
+- Open browser to: `http://WSL_IP:8081`
+- Or try: `http://localhost:8081` (if WSL2 networking is configured)
 
-### Using Gunicorn (recommended)
+---
+
+## OPTIONAL: Production Setup
+
+### Run with Gunicorn (Better Performance)
 ```bash
-# Activate virtual environment
 source venv/bin/activate
-
-# Run with gunicorn
 gunicorn app:app --bind 0.0.0.0:8081 --workers 4 --threads 2 --timeout 120
 ```
 
-### Create systemd service for auto-start
+### Auto-start on WSL Boot (systemd service)
+
+Create service file:
 ```bash
 sudo nano /etc/systemd/system/taro-popsicle.service
 ```
 
-Add:
+Add (replace `YOUR_WSL_USERNAME` with your username):
 ```ini
 [Unit]
 Description=Taro Popsicle Photo App
@@ -196,21 +197,42 @@ sudo systemctl start taro-popsicle
 sudo systemctl status taro-popsicle
 ```
 
+---
+
 ## Troubleshooting
 
-### HEIC images not loading
+### Can't SSH to WSL from Mac
 ```bash
-# Install additional HEIF libraries
-sudo apt install libde265-dev libx265-dev -y
-pip install --no-cache-dir pillow-heif
+# On WSL, check SSH service is running
+sudo service ssh status
+
+# If not running, start it
+sudo service ssh start
+
+# Check firewall (Windows Defender)
+# May need to allow SSH port 22 in Windows Firewall
 ```
 
-### Permission issues with data directory
+### rsync: command not found (on Mac)
 ```bash
-# Fix ownership
+# rsync is pre-installed on macOS, but if missing:
+brew install rsync
+```
+
+### HEIC images not loading on WSL
+```bash
+# Reinstall HEIF libraries
+sudo apt install -y libde265-dev libx265-dev libheif-dev libheif1
+source venv/bin/activate
+pip install --no-cache-dir --force-reinstall pillow-heif
+```
+
+### Permission denied errors
+```bash
 cd ~/taro-popsicle
 sudo chown -R $USER:$USER data/
 chmod -R 755 data/
+chmod 644 data/photobook.db
 ```
 
 ### Port already in use
@@ -218,44 +240,37 @@ chmod -R 755 data/
 # Check what's using the port
 sudo lsof -i :8081
 
-# Kill the process or change PORT in .env
+# Either kill the process or change PORT in .env
 ```
 
-### Database locked errors
+### Can't access from Windows browser
 ```bash
-# Check file permissions
-ls -l data/photobook.db
+# Get WSL IP address
+hostname -I
 
-# Should be readable/writable by your user
-chmod 644 data/photobook.db
+# Use that IP in browser: http://192.168.1.XXX:8081
+# Or try: http://localhost:8081
 ```
 
-## WSL-Specific Notes
+---
 
-1. **File Paths**: WSL uses Linux-style paths (`/home/user/`) not Windows paths (`C:\Users\`)
-2. **Performance**: Keep project files in WSL filesystem (`~/`) rather than Windows filesystem (`/mnt/c/`) for better I/O performance
-3. **Networking**: WSL can access Windows network, but Windows may need special config to access WSL services
-4. **Accessing from Windows**: If you want to access the app from Windows browser:
-   - Get WSL IP: `hostname -I`
-   - Access at `http://WSL_IP:8081`
-   - Or use `localhost:8081` if WSL2 networking is configured
+## Quick Checklist
 
-## Quick Migration Checklist
+**On WSL:**
+- [ ] Install system packages (Python, HEIF libs, SSH, rsync)
+- [ ] Start SSH service
+- [ ] Get WSL IP address
+- [ ] Clone repository
 
-- [ ] Install prerequisites on WSL (Python, HEIF libraries)
-- [ ] Transfer code to WSL (git clone or file copy)
-- [ ] Transfer data/ directory (~804MB)
+**On Mac:**
+- [ ] Transfer data/ directory via rsync or scp
+
+**On WSL:**
 - [ ] Create Python virtual environment
-- [ ] Install Python dependencies
-- [ ] Create .env file with credentials
-- [ ] Verify all data directories exist
-- [ ] Test run with `python app.py`
-- [ ] Optional: Set up gunicorn for production
-- [ ] Optional: Create systemd service for auto-start
+- [ ] Install Python packages
+- [ ] Create .env file
+- [ ] Verify data directory transferred correctly
+- [ ] Run `python app.py`
+- [ ] Access at `http://localhost:8081`
 
-## Estimated Time
-- Prerequisites installation: 5-10 minutes
-- File transfer (depends on method): 10-30 minutes
-- Python setup: 5 minutes
-- Testing: 5 minutes
-- **Total: 25-50 minutes**
+**Estimated time:** 20-30 minutes (depending on network speed for 804MB transfer)
