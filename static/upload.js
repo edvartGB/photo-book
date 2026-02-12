@@ -150,7 +150,7 @@ uploadForm.addEventListener("submit", async (e) => {
         }
 
         if (albumId && albumId !== "__new__") {
-            window.location = `/album/${albumId}`;
+            window.location = `/albums/${albumId}`;
         } else {
             window.location = "/";
         }

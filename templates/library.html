@@ -15,12 +15,14 @@
 <form method="POST" action="{{ url_for('delete_photos_bulk') }}" id="delete-form">
     <div class="photo-grid" id="photo-grid">
         {% for photo in photos %}
-        <div class="photo-card" data-id="{{ photo['id'] }}" data-href="{{ url_for('photo', photo_id=photo['id']) }}">
-            <img src="{{ url_for('serve_thumbnail', filename=photo['filename']) }}" alt="{{ photo['caption'] or photo['original_name'] }}" loading="lazy">
+        <div class="photo-card" data-id="{{ photo['id'] }}">
+            <a href="{{ url_for('photo', photo_id=photo['id']) }}" class="photo-link">
+                <img src="{{ url_for('serve_thumbnail', filename=photo['filename']) }}" alt="{{ photo['caption'] or photo['original_name'] }}" loading="lazy">
+                {% if photo['caption'] %}
+                <span class="photo-caption">{{ photo['caption'][:30] }}{% if photo['caption']|length > 30 %}...{% endif %}</span>
+                {% endif %}
+            </a>
             <input type="checkbox" name="photo_ids" value="{{ photo['id'] }}" class="picker-check" hidden>
-            {% if photo['caption'] %}
-            <span class="photo-caption">{{ photo['caption'][:30] }}{% if photo['caption']|length > 30 %}...{% endif %}</span>
-            {% endif %}
         </div>
         {% endfor %}
     </div>
@@ -69,17 +71,16 @@ if (toggle) {
 
 if (grid) {
     grid.addEventListener("click", (e) => {
+        if (!selectMode) return;
+
+        e.preventDefault();
         const card = e.target.closest(".photo-card");
         if (!card) return;
 
-        if (selectMode) {
-            const cb = card.querySelector(".picker-check");
-            cb.checked = !cb.checked;
-            card.classList.toggle("selected", cb.checked);
-            updateCount();
-        } else {
-            window.location = card.dataset.href;
-        }
+        const cb = card.querySelector(".picker-check");
+        cb.checked = !cb.checked;
+        card.classList.toggle("selected", cb.checked);
+        updateCount();
     });
 }
 
