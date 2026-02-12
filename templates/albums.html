@@ -1,14 +1,16 @@
 {% extends "base.html" %}
 {% block title %}Albums - Photo Book{% endblock %}
 
-{% block content %}
-<div class="page-header">
-    <h1>Albums</h1>
+{% block nav_toolbar %}
+<div class="nav-toolbar">
+    <button type="button" id="create-album-btn" class="nav-action">+ Album</button>
 </div>
+{% endblock %}
 
-<form method="POST" class="create-album-form">
-    <input type="text" name="name" placeholder="New album name..." required>
-    <button type="submit">Create</button>
+{% block content %}
+
+<form method="POST" id="create-album-form" hidden>
+    <input type="hidden" name="name" id="create-album-name">
 </form>
 
 {% if albums %}
@@ -28,6 +30,18 @@
     {% endfor %}
 </div>
 {% else %}
-<p class="empty">No albums yet. Create one above.</p>
+<p class="empty">No albums yet.</p>
 {% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById("create-album-btn").addEventListener("click", () => {
+    const name = prompt("Album name:");
+    if (name && name.trim()) {
+        document.getElementById("create-album-name").value = name.trim();
+        document.getElementById("create-album-form").submit();
+    }
+});
+</script>
 {% endblock %}

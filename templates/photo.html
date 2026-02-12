@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block title %}{{ photo['caption'] or 'Photo' }} - Photo Book{% endblock %}
+{% block head %}<script src="https://cdn.apple-livephotoskit.com/lpk/1/livephotoskit.js" defer></script>{% endblock %}
 
 {% block content %}
 <div class="photo-detail">

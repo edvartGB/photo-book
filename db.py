@@ -7,6 +7,7 @@ import config
 def get_db():
     conn = sqlite3.connect(config.DB_PATH)
     conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA journal_mode=WAL")
     conn.execute("PRAGMA foreign_keys = ON")
     return conn
 
@@ -27,10 +28,15 @@ def init_db():
             caption TEXT,
             video_filename TEXT,
             album_id INTEGER REFERENCES albums(id) ON DELETE SET NULL,
+            hidden INTEGER NOT NULL DEFAULT 0,
             taken_at TIMESTAMP,
             uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
     """)
+    # Migrate: add hidden column if missing
+    cols = [r[1] for r in conn.execute("PRAGMA table_info(photos)").fetchall()]
+    if "hidden" not in cols:
+        conn.execute("ALTER TABLE photos ADD COLUMN hidden INTEGER NOT NULL DEFAULT 0")
     conn.commit()
     conn.close()
 
@@ -68,28 +74,58 @@ def get_album(album_id):
     return album
 
 
-def delete_album(album_id):
+def rename_album(album_id, name):
     conn = get_db()
-    conn.execute("UPDATE photos SET album_id = NULL WHERE album_id = ?", (album_id,))
-    conn.execute("DELETE FROM albums WHERE id = ?", (album_id,))
+    conn.execute("UPDATE albums SET name = ? WHERE id = ?", (name, album_id))
     conn.commit()
     conn.close()
 
 
+def delete_album(album_id, delete_photos=False):
+    conn = get_db()
+    files = []
+    if delete_photos:
+        rows = conn.execute(
+            "SELECT filename, video_filename FROM photos WHERE album_id = ?", (album_id,)
+        ).fetchall()
+        files = [(r["filename"], r["video_filename"]) for r in rows]
+        conn.execute("DELETE FROM photos WHERE album_id = ?", (album_id,))
+    else:
+        conn.execute("UPDATE photos SET album_id = NULL WHERE album_id = ?", (album_id,))
+    conn.execute("DELETE FROM albums WHERE id = ?", (album_id,))
+    conn.commit()
+    conn.close()
+    return files
+
+
 # --- Photos ---
 
-def add_photo(filename, original_name, caption, album_id, taken_at, video_filename=None):
+def add_photo(filename, original_name, caption, album_id, taken_at, video_filename=None, hidden=False):
     conn = get_db()
     conn.execute(
-        """INSERT INTO photos (filename, original_name, caption, album_id, taken_at, video_filename)
-           VALUES (?, ?, ?, ?, ?, ?)""",
-        (filename, original_name, caption or None, album_id or None, taken_at, video_filename),
+        """INSERT INTO photos (filename, original_name, caption, album_id, taken_at, video_filename, hidden)
+           VALUES (?, ?, ?, ?, ?, ?, ?)""",
+        (filename, original_name, caption or None, album_id or None, taken_at, video_filename, int(hidden)),
     )
     conn.commit()
     conn.close()
 
 
-def get_photos(album_id=None, page=1, per_page=40):
+def add_photos_batch(photos):
+    """Insert multiple photos in a single transaction.
+    photos: list of (filename, original_name, caption, album_id, taken_at, video_filename, hidden)
+    """
+    conn = get_db()
+    conn.executemany(
+        """INSERT INTO photos (filename, original_name, caption, album_id, taken_at, video_filename, hidden)
+           VALUES (?, ?, ?, ?, ?, ?, ?)""",
+        photos,
+    )
+    conn.commit()
+    conn.close()
+
+
+def get_photos(album_id=None, page=1, per_page=40, feed_only=False):
     conn = get_db()
     offset = (page - 1) * per_page
 
@@ -105,6 +141,16 @@ def get_photos(album_id=None, page=1, per_page=40):
         total = conn.execute(
             "SELECT COUNT(*) FROM photos WHERE album_id = ?", (album_id,)
         ).fetchone()[0]
+    elif feed_only:
+        photos = conn.execute(
+            """SELECT p.*, a.name AS album_name FROM photos p
+               LEFT JOIN albums a ON a.id = p.album_id
+               WHERE p.hidden = 0
+               ORDER BY COALESCE(p.taken_at, p.uploaded_at) DESC
+               LIMIT ? OFFSET ?""",
+            (per_page, offset),
+        ).fetchall()
+        total = conn.execute("SELECT COUNT(*) FROM photos WHERE hidden = 0").fetchone()[0]
     else:
         photos = conn.execute(
             """SELECT p.*, a.name AS album_name FROM photos p
@@ -177,3 +223,16 @@ def delete_photo(photo_id):
     if photo:
         return photo["filename"], photo["video_filename"]
     return None, None
+
+
+def delete_photos_bulk(photo_ids):
+    """Delete multiple photos, return list of (filename, video_filename) for file cleanup."""
+    conn = get_db()
+    placeholders = ",".join("?" for _ in photo_ids)
+    rows = conn.execute(
+        f"SELECT filename, video_filename FROM photos WHERE id IN ({placeholders})", photo_ids
+    ).fetchall()
+    conn.execute(f"DELETE FROM photos WHERE id IN ({placeholders})", photo_ids)
+    conn.commit()
+    conn.close()
+    return [(r["filename"], r["video_filename"]) for r in rows]

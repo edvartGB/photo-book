@@ -5,12 +5,13 @@
 }
 
 body {
-    font-family: Verdana, Geneva, sans-serif;
+    font-family: "CMU Serif", "Computer Modern Serif", serif;
     background: #f5f5f5;
     color: #333;
     font-size: 13px;
     min-height: 100vh;
 }
+
 
 a {
     color: #06c;
@@ -25,15 +26,26 @@ a:hover {
 nav {
     background: #fff;
     border-bottom: 1px solid #ccc;
-    padding: 8px 16px;
+}
+
+.nav-inner {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 14px 16px;
     display: flex;
     align-items: center;
     justify-content: space-between;
 }
 
+.nav-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
 .nav-brand {
     font-weight: bold;
-    font-size: 14px;
+    font-size: 20px;
     text-decoration: none;
     color: #333;
 }
@@ -41,18 +53,51 @@ nav {
 .nav-links {
     display: flex;
     gap: 12px;
+    align-items: center;
+}
+
+.nav-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #666;
+}
+
+.nav-toolbar button {
+    padding: 0 8px;
+    line-height: 20px;
+    font-size: 12px;
 }
 
 .nav-links a {
     text-decoration: none;
     color: #666;
-    font-size: 12px;
+    font-size: 15px;   /* was 14px */
 }
+
 
 .nav-links a:hover,
 .nav-links a.active {
     color: #333;
     text-decoration: underline;
+}
+
+.nav-action {
+    background: none;
+    border: 1px solid #ccc;
+    font-family: inherit;
+    font-size: 12px;
+    color: #666;
+    cursor: pointer;
+    padding: 0 8px;
+    line-height: 20px;
+}
+
+.nav-action:hover {
+    color: #333;
+    border-color: #999;
+    background: none;
 }
 
 /* --- Main --- */
@@ -64,7 +109,7 @@ main {
 }
 
 h1 {
-    font-size: 16px;
+    font-size: 20px;
     margin-bottom: 12px;
 }
 
@@ -146,22 +191,45 @@ button:disabled {
     display: flex;
     flex-direction: column;
     gap: 24px;
+    max-width: 700px;
+    margin: 0 auto;
 }
 
 .feed-item {
     background: #fff;
     border: 1px solid #ccc;
-    padding: 12px;
+    padding-top: 12px;  
+}
+
+
+.feed-item a {
+    display: block;
+    position: relative;
+}
+
+.live-badge {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    background: rgba(0, 0, 0, 0.5);
+    color: #fff;
+    font-size: 10px;
+    font-weight: bold;
+    padding: 2px 6px;
+    letter-spacing: 0.5px;
+    z-index: 1;
 }
 
 .feed-item img {
     display: block;
     width: 100%;
-    height: auto;
+    height: 850px;
+    object-fit: contain;
+    
 }
 
 .feed-item-info {
-    margin-top: 8px;
+    padding: 6px 10px 8px;
     font-size: 12px;
     color: #666;
     display: flex;
@@ -254,20 +322,6 @@ button:disabled {
     color: #999;
 }
 
-.create-album-form {
-    display: flex;
-    gap: 4px;
-    margin-bottom: 16px;
-}
-
-.create-album-form input {
-    flex: 1;
-    padding: 5px;
-    border: 1px solid #999;
-    font-family: inherit;
-    font-size: 13px;
-}
-
 /* --- Upload --- */
 
 .drop-zone {
@@ -313,13 +367,35 @@ button:disabled {
     border: 1px solid #ccc;
 }
 
+.preview-more {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 80px;
+    border: 1px solid #ccc;
+    background: #eee;
+    color: #666;
+    font-size: 12px;
+}
+
 .upload-fields {
     display: flex;
     gap: 4px;
     flex-wrap: wrap;
+    align-items: center;
 }
 
-.upload-fields input,
+.hide-feed-label {
+    font-size: 12px;
+    color: #666;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.upload-fields input[type="text"],
 .upload-fields select {
     padding: 5px;
     border: 1px solid #999;
@@ -327,9 +403,14 @@ button:disabled {
     font-size: 13px;
 }
 
-.upload-fields input {
+.upload-fields input[type="text"] {
     flex: 1;
     min-width: 180px;
+}
+
+.new-album-input {
+    flex: 1;
+    min-width: 140px;
 }
 
 /* --- Photo detail --- */
@@ -394,8 +475,40 @@ button:disabled {
     margin-bottom: 0;
 }
 
+.editable-title {
+    cursor: pointer;
+    border-bottom: 1px dashed transparent;
+}
+
+.editable-title:hover {
+    border-bottom-color: #999;
+}
+
+.rename-form {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.rename-input {
+    font-family: inherit;
+    font-size: 20px;
+    font-weight: bold;
+    padding: 0 4px;
+    border: 1px solid #999;
+}
+
 .inline-form {
     display: inline;
+}
+
+.delete-photos-label {
+    font-size: 12px;
+    color: #900;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 3px;
 }
 
 .page-header-actions {
@@ -430,6 +543,15 @@ button:disabled {
 
 .picker-card.selected {
     border-color: #06c;
+    opacity: 0.85;
+}
+
+.select-mode .photo-card {
+    cursor: pointer;
+}
+
+.select-mode .photo-card.selected {
+    box-shadow: inset 0 0 0 3px #06c;
     opacity: 0.85;
 }
 
@@ -472,10 +594,6 @@ button:disabled {
     }
 
     .upload-fields {
-        flex-direction: column;
-    }
-
-    .create-album-form {
         flex-direction: column;
     }
 }

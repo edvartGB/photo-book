@@ -1,20 +1,30 @@
 {% extends "base.html" %}
 {% block title %}Library - Photo Book{% endblock %}
 
+{% block nav_toolbar %}
+<div id="select-toolbar" class="nav-toolbar">
+    <button type="button" id="select-toggle" class="nav-action">Select</button>
+    <span id="select-count" style="visibility:hidden">0 selected</span>
+    <button type="submit" form="delete-form" class="btn-danger" id="delete-btn" style="visibility:hidden" disabled>Delete</button>
+</div>
+{% endblock %}
+
 {% block content %}
-<h1>Library</h1>
 
 {% if photos %}
-<div class="photo-grid">
-    {% for photo in photos %}
-    <a href="{{ url_for('photo', photo_id=photo['id']) }}" class="photo-card">
-        <img src="{{ url_for('serve_thumbnail', filename=photo['filename']) }}" alt="{{ photo['caption'] or photo['original_name'] }}" loading="lazy">
-        {% if photo['caption'] %}
-        <span class="photo-caption">{{ photo['caption'][:30] }}{% if photo['caption']|length > 30 %}...{% endif %}</span>
-        {% endif %}
-    </a>
-    {% endfor %}
-</div>
+<form method="POST" action="{{ url_for('delete_photos_bulk') }}" id="delete-form">
+    <div class="photo-grid" id="photo-grid">
+        {% for photo in photos %}
+        <div class="photo-card" data-id="{{ photo['id'] }}" data-href="{{ url_for('photo', photo_id=photo['id']) }}">
+            <img src="{{ url_for('serve_thumbnail', filename=photo['filename']) }}" alt="{{ photo['caption'] or photo['original_name'] }}" loading="lazy">
+            <input type="checkbox" name="photo_ids" value="{{ photo['id'] }}" class="picker-check" hidden>
+            {% if photo['caption'] %}
+            <span class="photo-caption">{{ photo['caption'][:30] }}{% if photo['caption']|length > 30 %}...{% endif %}</span>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</form>
 
 <div class="pagination">
     {% if page > 1 %}
@@ -27,4 +37,65 @@
 {% else %}
 <p class="empty">No photos yet. <a href="{{ url_for('upload_page') }}">Upload some!</a></p>
 {% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+const toggle = document.getElementById("select-toggle");
+const toolbar = document.getElementById("select-toolbar");
+const grid = document.getElementById("photo-grid");
+const countEl = document.getElementById("select-count");
+const deleteBtn = document.getElementById("delete-btn");
+const deleteForm = document.getElementById("delete-form");
+let selectMode = false;
+
+if (toggle) {
+    toggle.addEventListener("click", () => {
+        selectMode = !selectMode;
+        toggle.textContent = selectMode ? "Cancel" : "Select";
+        countEl.style.visibility = selectMode ? "visible" : "hidden";
+        deleteBtn.style.visibility = selectMode ? "visible" : "hidden";
+        grid.classList.toggle("select-mode", selectMode);
+
+        if (!selectMode) {
+            document.querySelectorAll(".picker-check").forEach(cb => {
+                cb.checked = false;
+                cb.closest(".photo-card").classList.remove("selected");
+            });
+            updateCount();
+        }
+    });
+}
+
+if (grid) {
+    grid.addEventListener("click", (e) => {
+        const card = e.target.closest(".photo-card");
+        if (!card) return;
+
+        if (selectMode) {
+            const cb = card.querySelector(".picker-check");
+            cb.checked = !cb.checked;
+            card.classList.toggle("selected", cb.checked);
+            updateCount();
+        } else {
+            window.location = card.dataset.href;
+        }
+    });
+}
+
+function updateCount() {
+    const n = document.querySelectorAll(".picker-check:checked").length;
+    countEl.textContent = n + " selected";
+    deleteBtn.disabled = n === 0;
+}
+
+if (deleteForm) {
+    deleteForm.addEventListener("submit", (e) => {
+        const n = document.querySelectorAll(".picker-check:checked").length;
+        if (!confirm(`Delete ${n} photo${n !== 1 ? "s" : ""}? This cannot be undone.`)) {
+            e.preventDefault();
+        }
+    });
+}
+</script>
 {% endblock %}

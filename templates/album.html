@@ -3,11 +3,17 @@
 
 {% block content %}
 <div class="page-header">
-    <h1>{{ album['name'] }}</h1>
+    <h1 id="album-title" class="editable-title" title="Click to rename">{{ album['name'] }}</h1>
+    <form method="POST" action="{{ url_for('rename_album', album_id=album['id']) }}" id="rename-form" class="rename-form" hidden>
+        <input type="text" name="name" value="{{ album['name'] }}" id="rename-input" class="rename-input">
+        <button type="submit">Save</button>
+        <button type="button" id="rename-cancel">Cancel</button>
+    </form>
     <div class="page-header-actions">
         <a href="{{ url_for('add_photos_to_album', album_id=album['id']) }}">Add photos</a>
         <form method="POST" action="{{ url_for('delete_album', album_id=album['id']) }}" class="inline-form"
-              onsubmit="return confirm('Delete this album? Photos will not be deleted.')">
+              onsubmit="return confirm(this.delete_photos.checked ? 'Delete this album AND all its photos? This cannot be undone.' : 'Delete this album? Photos will be kept.')">
+            <label class="delete-photos-label"><input type="checkbox" name="delete_photos" value="1"> Delete photos too</label>
             <button type="submit" class="btn-danger">Delete album</button>
         </form>
     </div>
@@ -34,6 +40,27 @@
     {% endif %}
 </div>
 {% else %}
-<p class="empty">No photos in this album. <a href="{{ url_for('upload_page') }}">Upload some!</a></p>
+<p class="empty">this album is empty. <a href="{{ url_for('upload_page') }}">upload some photos!</a></p>
 {% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+const title = document.getElementById("album-title");
+const form = document.getElementById("rename-form");
+const input = document.getElementById("rename-input");
+const cancel = document.getElementById("rename-cancel");
+
+title.addEventListener("click", () => {
+    title.hidden = true;
+    form.hidden = false;
+    input.focus();
+    input.select();
+});
+
+cancel.addEventListener("click", () => {
+    form.hidden = true;
+    title.hidden = false;
+});
+</script>
 {% endblock %}
